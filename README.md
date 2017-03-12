@@ -39,7 +39,15 @@ body-parser
 
 ******************* TO RUN SERVER *****************************************
 
-# node app.js
+node app.js
+
+******************* HELPFULL TUTORIALS ************************************
+
+Passport Authentication - https://www.youtube.com/watch?v=uaizKlOXyfY
+
+Cookies - https://www.youtube.com/watch?v=pyN9qEbXN0s
+
+HTTPS - https://www.youtube.com/watch?v=8ptiZlO7ROs
 
 
 
