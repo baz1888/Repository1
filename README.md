@@ -11,7 +11,7 @@ Allows most common HTTP operations: GET, POST, PUT, DELETE, PATCH or any other m
 
 Allows data to be stored through mongoClient and Mongoose.
 
-******************* MODEULES USED ******************************************
+******************* MODULES USED ******************************************
 
 Express
 
