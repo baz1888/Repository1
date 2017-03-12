@@ -18,8 +18,9 @@ var cookes = require("cookies");
 var cookieParser = require("cookie-parser");
 var session = require("express-session");
 var morgan = require("morgan");
+var helmet = require('helmet');
 
-
+app.use(helmet());
 app.use(cookieParser());
 app.use(session({secret: "anystringoftext",
         saveUninitialized:true,
@@ -35,13 +36,20 @@ app.use("/checkCookie", function(req, res){
 });
 
 // bundle our routes
-var apiRoutes = express.Router();
-app.use('/api', apiRoutes);
+var register = express.Router();
+app.use('/api', register);
+var memberarea = express.Router();
+app.use('/memberarea', memberarea);
+
+
 
 //configure the express app to parse JSON-formatted body
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
+var urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.use(bodyParser.json());
 app.use(passport.initialize());
+require('./config/passport')(passport);
+memberarea.use(bodyParser.json());
+memberarea.use(passport.initialize());
 
 //app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -56,12 +64,6 @@ https.createServer(httpsOptions, app)
 	.listen(config.port, function(){
 		console.log(`Serving https connection`)})
 
-//add route for the root
-app.get('/',function (request, response) {
-  response.writeHead(200, {"Content-Type": "text/plain"});
-  response.end("We're up and running!!!");
-});
-
 // Put a friendly message on the terminal
 console.log("Server running at "+ config.port+" by host: "+  config.host);
 
@@ -69,21 +71,18 @@ console.log("Server running at "+ config.port+" by host: "+  config.host);
 var contact = require('./api/fixtures/index');
 
 
-//Add routes for contacts api
-app.get('/api/fixtures',contact.index);
-app.post('/api/fixtures',contact.create);
-
-app.put('/api/fixtures/:id',contact.update);
-app.delete('/api/fixtures/:id',contact.delete);
-
+//Add routes for football api
+memberarea.get('/fixtures',contact.index);
+memberarea.get('/fixtures/:id',contact.findFixture);
+memberarea.post('/fixtures',contact.create);
+memberarea.put('/fixtures/:id',contact.update);
+memberarea.delete('/fixtures/:id',contact.delete);
 mongoose.connect(config.database);
  
-// pass passport for configuration
-require('./config/passport')(passport);
 
  
-// create a new user account (POST http://localhost:8080/api/signup)
-apiRoutes.post('/signup',urlencodedParser, function(req, res) {
+// create a new user
+register.post('/signup',urlencodedParser, function(req, res) {
   if (!req.body.name || !req.body.password) {
     res.json({success: false, msg: 'Please enter name and password.'});
   } else {
@@ -101,7 +100,7 @@ apiRoutes.post('/signup',urlencodedParser, function(req, res) {
   }
 });
 
-apiRoutes.post('/authenticate',urlencodedParser, function(req, res) {
+register.post('/authenticate',urlencodedParser, function(req, res) {
   User.findOne({
     name: req.body.name
   }, function(err, user) {
@@ -125,9 +124,8 @@ apiRoutes.post('/authenticate',urlencodedParser, function(req, res) {
   });
 });
 
-
-// route to a restricted info (GET http://localhost:8080/api/memberinfo)
-apiRoutes.get('/memberinfo', passport.authenticate('jwt', { session: false}), function(req, res) {
+//Tried creating a secure route, requiring the user to enter a token to perform get all fixtures,post,update & delete
+memberarea.use(passport.authenticate('jwt', { session: false}), function(req, res) {
   var token = getToken(req.headers);
   console.log('the token: ' + token);
   if (token) {
@@ -148,6 +146,7 @@ apiRoutes.get('/memberinfo', passport.authenticate('jwt', { session: false}), fu
   }
 });
 
+
  var getToken = function (headers) {
   if (headers && headers.authorization) {
     var parted = headers.authorization.split(' ');
@@ -163,6 +162,7 @@ apiRoutes.get('/memberinfo', passport.authenticate('jwt', { session: false}), fu
 
 
 
-app.use('/api', apiRoutes);
+
+
 
 

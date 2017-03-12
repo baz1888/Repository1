@@ -30,11 +30,15 @@ exports.index = function(req, res) {
     else
     {
         console.log('No database object!');
+        res.send("There are no fixtures created yet!")
     }
 
 } ;
 
-// Creates a new fixture in datastore.
+
+
+
+// Creates a new fixture in mongo
 exports.create = function(req, res) {
 
   var fixture = req.body;
@@ -46,7 +50,7 @@ exports.create = function(req, res) {
                 res.send({'error':'An error has occurred'});
             } else {
                 console.log('Success: ' + JSON.stringify(result[0]));
-                res.send(result[0]);
+                res.send("A new fixture has been successfully created!").status(201);
             }
         });
     }
@@ -71,7 +75,7 @@ exports.update = function(req, res) {
               res.send({'error':'An error has occurred'});
           } else {
               console.log('' + result + ' document(s) updated');
-              res.send(fixture);
+              res.send("The fixture with ID: " + id + " has been updated!");
           }
   });
 
@@ -85,11 +89,30 @@ exports.delete = function(req, res) {
   var collection = mongoDb.collection('Matchs');
   collection.removeOne({'_id':ObjectId(id)},     function(err, result) {
       if (err) {
-          res.send({'error':'An error has occurred - ' + err});
+          res.send('Fixture does not exist!');
       } else {
           console.log('' + result + ' document(s) deleted');
-          res.send(req.body);
+          res.send("The fixture with ID: " + id + " has been deleted!");
       }
   });
 
 }
+
+// finding an existing fixture in datastore.
+exports.findFixture = function(req, res) {
+
+    var id = req.params.id;
+  console.log('Finding fixture ' + id);
+  var collection = mongoDb.collection('Matchs');
+  collection.findOne({'_id':ObjectId(id)},     function(err, result) {
+      if (err) {
+          res.send('Fixture does not exist please enter a correct ID!');
+      } else {
+          console.log('' + result + ' fixture found');
+          res.send(result);
+      }
+  });
+
+}
+
+
