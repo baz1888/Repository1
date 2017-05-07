@@ -13,6 +13,14 @@ Allows data to be stored using Mongoose
 
 Provides user authentication through the use of tokens.
 
+Methods tested using supertest.
+
+Messages published using Pubnub.
+
+Use of emailing using Mailgun.
+
+Mongoose schema validation.
+
 ******************* MODULES USED ******************************************
 
 Express
