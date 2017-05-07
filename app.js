@@ -50,6 +50,7 @@ app.use(passport.initialize());
 require('./config/passport')(passport);
 memberarea.use(bodyParser.json());
 memberarea.use(passport.initialize());
+app.use(require('body-parser').json())
 
 //app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -78,27 +79,32 @@ memberarea.post('/fixtures',contact.create);
 memberarea.put('/fixtures/:id',contact.update);
 memberarea.delete('/fixtures/:id',contact.delete);
 mongoose.connect(config.database);
+
+
  
 
  
 // create a new user
 register.post('/signup',urlencodedParser, function(req, res) {
-  if (!req.body.name || !req.body.password) {
-    res.json({success: false, msg: 'Please enter name and password.'});
+  if (!req.body.name || !req.body.password || !req.body.email) {
+    res.json({success: false, msg: 'Please fill all fields to register.'});
   } else {
     var newUser = new User({
       name: req.body.name,
-      password: req.body.password
+      password: req.body.password,
+      email: req.body.email
     });
     // save the user
     newUser.save(function(err) {
       if (err) {
-        return res.json({success: false, msg: 'Username already exists.'});
+        return res.status(400).send({success: false, msg: 'User already exists'});
       }
       res.json({success: true, msg: 'Successful created new user.'});
     });
   }
 });
+
+
 
 register.post('/authenticate',urlencodedParser, function(req, res) {
   User.findOne({

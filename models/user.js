@@ -1,9 +1,7 @@
 var mongoose = require('mongoose');
+var validator = require('node-mongoose-validator');
 var Schema = mongoose.Schema;
-var bcrypt = require('bcrypt');
- 
-// Thanks to http://blog.matoski.com/articles/jwt-express-node-mongoose/
- 
+
 // set up a mongoose model
 var UserSchema = new Schema({
   name: {
@@ -14,29 +12,15 @@ var UserSchema = new Schema({
   password: {
         type: String,
         required: true
-    }
+    },
+    email: { type: String, set: toLower },
+
+  updated: { type: Date, default: Date.now }
 });
- 
-UserSchema.pre('save', function (next) {
-    var user = this;
-    if (this.isModified('password') || this.isNew) {
-        bcrypt.genSalt(10, function (err, salt) {
-            if (err) {
-                return next(err);
-            }
-            bcrypt.hash(user.password, salt, function (err, hash) {
-                if (err) {
-                    return next(err);
-                }
-                user.password = hash;
-                next();
-            });
-        });
-    } else {
-        return next();
-    }
-});
- 
+
+UserSchema.path('email').validate(validator.isEmail(), 'Please provide a valid email address');
+
+
 UserSchema.methods.comparePassword = function (passw, cb) {
     bcrypt.compare(passw, this.password, function (err, isMatch) {
         if (err) {
@@ -45,5 +29,9 @@ UserSchema.methods.comparePassword = function (passw, cb) {
         cb(null, isMatch);
     });
 };
+
+function toLower (str) {
+    return str.toLowerCase();
+}
  
 module.exports = mongoose.model('User', UserSchema);
